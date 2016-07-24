@@ -24,8 +24,10 @@ import org.powermock.modules.junit4.rule.PowerMockRule;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
+import static com.segment.analytics.Analytics.LogLevel.NONE;
 import static com.segment.analytics.Analytics.LogLevel.VERBOSE;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -65,6 +67,7 @@ public class AdjustIntegrationTest {
     when(Adjust.getDefaultInstance()).thenReturn(adjustInstance);
     ValueMap settings = new ValueMap() //
         .putValue("appToken", "foo") //
+        .putValue("setEventBufferingEnabled", true) //
         .putValue("setEnvironmentProduction", true);
 
     PowerMockito.whenNew(AdjustConfig.class)
@@ -73,7 +76,26 @@ public class AdjustIntegrationTest {
 
     AdjustIntegration.FACTORY.create(settings, analytics);
 
+    verify(config).setEventBufferingEnabled(true);
     verify(config).setLogLevel(LogLevel.VERBOSE);
+    verify(adjustInstance).onCreate(config);
+  }
+
+  @Test public void initializeWithDefaults() throws Exception {
+    PowerMockito.mockStatic(Adjust.class);
+    when(analytics.getApplication()).thenReturn(application);
+    when(analytics.logger("Adjust")).thenReturn(Logger.with(NONE));
+    when(Adjust.getDefaultInstance()).thenReturn(adjustInstance);
+    ValueMap settings = new ValueMap().putValue("appToken", "foo");
+
+    PowerMockito.whenNew(AdjustConfig.class)
+        .withArguments(application, "foo", AdjustConfig.ENVIRONMENT_SANDBOX)
+        .thenReturn(config);
+
+    AdjustIntegration.FACTORY.create(settings, analytics);
+
+    verify(config, never()).setEventBufferingEnabled(anyBoolean());
+    verify(config, never()).setLogLevel(any(LogLevel.class));
     verify(adjustInstance).onCreate(config);
   }
 

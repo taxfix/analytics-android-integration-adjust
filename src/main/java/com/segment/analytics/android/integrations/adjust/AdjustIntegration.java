@@ -14,6 +14,8 @@ import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
 import java.util.Map;
 
+import static com.adjust.sdk.AdjustConfig.ENVIRONMENT_PRODUCTION;
+import static com.adjust.sdk.AdjustConfig.ENVIRONMENT_SANDBOX;
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
 
 /**
@@ -48,12 +50,13 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
 
     Context context = analytics.getApplication();
     String appToken = settings.getString("appToken");
-    String environment = AdjustConfig.ENVIRONMENT_SANDBOX;
     boolean setEnvironmentProduction = settings.getBoolean("setEnvironmentProduction", false);
-    if (setEnvironmentProduction) {
-      environment = AdjustConfig.ENVIRONMENT_PRODUCTION;
-    }
+    String environment = setEnvironmentProduction ? ENVIRONMENT_PRODUCTION : ENVIRONMENT_SANDBOX;
     AdjustConfig adjustConfig = new AdjustConfig(context, appToken, environment);
+    boolean setEventBufferingEnabled = settings.getBoolean("setEventBufferingEnabled", false);
+    if (setEventBufferingEnabled) {
+      adjustConfig.setEventBufferingEnabled(true);
+    }
     switch (logger.logLevel) {
       case INFO:
         adjustConfig.setLogLevel(LogLevel.INFO);
