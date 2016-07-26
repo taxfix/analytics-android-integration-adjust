@@ -2,13 +2,16 @@ package com.segment.analytics.android.integrations.adjust;
 
 import android.app.Application;
 import com.adjust.sdk.Adjust;
+import com.adjust.sdk.AdjustAttribution;
 import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.AdjustEvent;
 import com.adjust.sdk.AdjustInstance;
 import com.adjust.sdk.LogLevel;
+import com.adjust.sdk.OnAttributionChangedListener;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.ValueMap;
+import com.segment.analytics.android.integrations.adjust.AdjustIntegration.SegmentAttributionChangedListener;
 import com.segment.analytics.core.tests.BuildConfig;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.test.TrackPayloadBuilder;
@@ -28,6 +31,7 @@ import static com.segment.analytics.Analytics.LogLevel.NONE;
 import static com.segment.analytics.Analytics.LogLevel.VERBOSE;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -68,7 +72,8 @@ public class AdjustIntegrationTest {
     ValueMap settings = new ValueMap() //
         .putValue("appToken", "foo") //
         .putValue("setEventBufferingEnabled", true) //
-        .putValue("setEnvironmentProduction", true);
+        .putValue("setEnvironmentProduction", true) //
+        .putValue("trackAttributionData", true);
 
     PowerMockito.whenNew(AdjustConfig.class)
         .withArguments(application, "foo", AdjustConfig.ENVIRONMENT_PRODUCTION)
@@ -78,6 +83,9 @@ public class AdjustIntegrationTest {
 
     verify(config).setEventBufferingEnabled(true);
     verify(config).setLogLevel(LogLevel.VERBOSE);
+    verify(config) //
+        .setOnAttributionChangedListener(isA(SegmentAttributionChangedListener.class));
+
     verify(adjustInstance).onCreate(config);
   }
 
@@ -96,6 +104,8 @@ public class AdjustIntegrationTest {
 
     verify(config, never()).setEventBufferingEnabled(anyBoolean());
     verify(config, never()).setLogLevel(any(LogLevel.class));
+    verify(config, never()) //
+        .setOnAttributionChangedListener(any(OnAttributionChangedListener.class));
     verify(adjustInstance).onCreate(config);
   }
 
@@ -138,5 +148,30 @@ public class AdjustIntegrationTest {
     verify(event).addCallbackParameter("type", "1");
     verify(event).addCallbackParameter("category", "shirt");
     verify(adjustInstance).trackEvent(event);
+  }
+
+  @Test public void trackAttributionData() {
+    SegmentAttributionChangedListener listener = new SegmentAttributionChangedListener(analytics);
+    AdjustAttribution data = new AdjustAttribution();
+    data.network = "FB";
+    data.campaign = "Campaign Name";
+    data.clickLabel = "Organic Content Title";
+    data.creative = "Red Hello World Ad";
+    data.adgroup = "Red Ones";
+    data.trackerToken = "foo";
+    data.trackerName = "bar";
+
+    listener.onAttributionChanged(data);
+
+    verify(analytics).track("Install Attributed", new Properties() //
+        .putValue("provider", "Adjust") //
+        .putValue("trackerToken", "foo")
+        .putValue("trackerName", "bar")
+        .putValue("campaign", new ValueMap() //
+            .putValue("source", "FB")
+            .putValue("name", "Campaign Name")
+            .putValue("content", "Organic Content Title")
+            .putValue("adCreative", "Red Hello World Ad")
+            .putValue("adGroup", "Red Ones")));
   }
 }

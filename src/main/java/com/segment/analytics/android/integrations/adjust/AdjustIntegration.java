@@ -2,10 +2,12 @@ package com.segment.analytics.android.integrations.adjust;
 
 import android.content.Context;
 import com.adjust.sdk.Adjust;
+import com.adjust.sdk.AdjustAttribution;
 import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.AdjustEvent;
 import com.adjust.sdk.AdjustInstance;
 import com.adjust.sdk.LogLevel;
+import com.adjust.sdk.OnAttributionChangedListener;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.ValueMap;
@@ -43,7 +45,7 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
   private final AdjustInstance adjust;
   private final ValueMap customEvents;
 
-  AdjustIntegration(ValueMap settings, Analytics analytics) {
+  AdjustIntegration(ValueMap settings, final Analytics analytics) {
     this.adjust = Adjust.getDefaultInstance();
     this.logger = analytics.logger(ADJUST_KEY);
     this.customEvents = settings.getValueMap("customEvents");
@@ -56,6 +58,11 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     boolean setEventBufferingEnabled = settings.getBoolean("setEventBufferingEnabled", false);
     if (setEventBufferingEnabled) {
       adjustConfig.setEventBufferingEnabled(true);
+    }
+    boolean trackAttributionData = settings.getBoolean("trackAttributionData", false);
+    if (trackAttributionData) {
+      OnAttributionChangedListener listener = new SegmentAttributionChangedListener(analytics);
+      adjustConfig.setOnAttributionChangedListener(listener);
     }
     switch (logger.logLevel) {
       case INFO:
@@ -100,5 +107,28 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
 
     logger.verbose("Adjust.getDefaultInstance().trackEvent(%s);", event);
     adjust.trackEvent(event);
+  }
+
+  static class SegmentAttributionChangedListener implements OnAttributionChangedListener {
+    final Analytics analytics;
+
+    SegmentAttributionChangedListener(Analytics analytics) {
+      this.analytics = analytics;
+    }
+
+    @Override public void onAttributionChanged(AdjustAttribution attribution) {
+      Map<String, Object> campaign = new ValueMap() //
+          .putValue("source", attribution.network)
+          .putValue("name", attribution.campaign)
+          .putValue("content", attribution.clickLabel)
+          .putValue("adCreative", attribution.creative)
+          .putValue("adGroup", attribution.adgroup);
+
+      analytics.track("Install Attributed", new Properties() //
+          .putValue("provider", "Adjust") //
+          .putValue("trackerToken", attribution.trackerToken)
+          .putValue("trackerName", attribution.trackerName)
+          .putValue("campaign", campaign));
+    }
   }
 }
