@@ -1,5 +1,6 @@
 package com.segment.analytics.android.integrations.adjust;
 
+import android.app.Activity;
 import android.content.Context;
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAttribution;
@@ -107,6 +108,18 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
 
     logger.verbose("Adjust.getDefaultInstance().trackEvent(%s);", event);
     adjust.trackEvent(event);
+  }
+
+  @Override public void onActivityResumed(Activity activity) {
+    super.onActivityResumed(activity);
+
+    adjust.onResume();
+  }
+
+  @Override public void onActivityPaused(Activity activity) {
+    super.onActivityPaused(activity);
+
+    adjust.onPause();
   }
 
   static class SegmentAttributionChangedListener implements OnAttributionChangedListener {

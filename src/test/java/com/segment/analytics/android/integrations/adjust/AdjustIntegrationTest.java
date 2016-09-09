@@ -1,5 +1,6 @@
 package com.segment.analytics.android.integrations.adjust;
 
+import android.app.Activity;
 import android.app.Application;
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAttribution;
@@ -173,5 +174,17 @@ public class AdjustIntegrationTest {
             .putValue("content", "Organic Content Title")
             .putValue("adCreative", "Red Hello World Ad")
             .putValue("adGroup", "Red Ones")));
+  }
+
+  @Test public void onActivityResumed() {
+    integration.onActivityResumed(mock(Activity.class));
+
+    verify(adjustInstance).onResume();
+  }
+
+  @Test public void onActivityPaused() {
+    integration.onActivityPaused(mock(Activity.class));
+
+    verify(adjustInstance).onPause();
   }
 }
