@@ -11,11 +11,13 @@ import com.adjust.sdk.LogLevel;
 import com.adjust.sdk.OnAttributionChangedListener;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
+import com.segment.analytics.Traits;
 import com.segment.analytics.ValueMap;
 import com.segment.analytics.android.integrations.adjust.AdjustIntegration.SegmentAttributionChangedListener;
 import com.segment.analytics.core.tests.BuildConfig;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.test.TrackPayloadBuilder;
+import com.segment.analytics.test.IdentifyPayloadBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,11 +27,12 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.rule.PowerMockRule;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static com.segment.analytics.Analytics.LogLevel.NONE;
 import static com.segment.analytics.Analytics.LogLevel.VERBOSE;
+import static com.segment.analytics.Utils.createTraits;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.isA;
@@ -39,7 +42,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 18, manifest = Config.NONE)
 @PowerMockIgnore({ "org.mockito.*", "org.robolectric.*", "android.*" })
 @PrepareForTest({ Adjust.class, AdjustConfig.class, AdjustEvent.class, AdjustIntegration.class }) //
@@ -108,6 +111,45 @@ public class AdjustIntegrationTest {
     verify(config, never()) //
         .setOnAttributionChangedListener(any(OnAttributionChangedListener.class));
     verify(adjustInstance).onCreate(config);
+  }
+
+  @Test public void identifyWithAnonymousId() {
+    PowerMockito.mockStatic(Adjust.class);
+    Traits traits = createTraits() //
+        .putValue("anonymousId", "1234")
+        .putValue("firstName", "ladan");
+
+    integration.identify(new IdentifyPayloadBuilder().traits(traits).build());
+
+    verify(adjustInstance).addSessionPartnerParameter("anonymousId", "1234");
+  }
+
+  @Test public void identifyWithUserId() {
+    PowerMockito.mockStatic(Adjust.class);
+    Traits traits = createTraits("34235") //
+        .putValue("firstName", "Prateek");
+
+    integration.identify(new IdentifyPayloadBuilder().traits(traits).build());
+
+    verify(adjustInstance).addSessionPartnerParameter("userId", "34235");
+  }
+
+  @Test public void identifyWithBoth() {
+    PowerMockito.mockStatic(Adjust.class);
+    Traits traits = createTraits("34235") //
+        .putValue("anonymousId", "123")
+        .putValue("firstName", "Prateek");
+
+    integration.identify(new IdentifyPayloadBuilder().traits(traits).build());
+
+    verify(adjustInstance).addSessionPartnerParameter("userId", "34235");
+    verify(adjustInstance).addSessionPartnerParameter("anonymousId", "123");
+
+  }
+
+  @Test public void reset() {
+    integration.reset();
+    verify(adjustInstance).resetSessionPartnerParameters();
   }
 
   @Test public void track() throws Exception {

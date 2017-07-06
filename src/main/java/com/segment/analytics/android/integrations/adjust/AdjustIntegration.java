@@ -12,6 +12,7 @@ import com.adjust.sdk.OnAttributionChangedListener;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.ValueMap;
+import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
@@ -85,6 +86,28 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
 
   @Override public AdjustInstance getUnderlyingInstance() {
     return adjust;
+  }
+
+  @Override public void identify(IdentifyPayload identify) {
+    super.identify(identify);
+
+    String userId = identify.userId();
+    if (userId != null) {
+      adjust.addSessionPartnerParameter("userId", userId);
+      logger.verbose("adjust.addSessionPartnerParameter(userId, (%s))", userId);
+    }
+
+    String anonymousId = identify.anonymousId();
+    if (anonymousId != null) {
+      adjust.addSessionPartnerParameter("anonymousId", anonymousId);
+      logger.verbose("adjust.addSessionPartnerParameter(anonymousId, (%s))", anonymousId);
+    }
+  }
+
+  @Override public void reset() {
+    super.reset();
+    adjust.resetSessionPartnerParameters();
+    logger.verbose("Adjust.getDefaultInstance().resetSessionPartnerParameters();");
   }
 
   @Override public void track(TrackPayload track) {
