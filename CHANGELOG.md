@@ -1,6 +1,14 @@
-Version 0.3.3 (1st November, 2018)
+# CHANGELOG
+
+Version 0.3.3 (18th April, 2019)
+================================
+*(Supports Adjust 4.17.0)*
+
+  * [Improvement](https://github.com/segment-integrations/analytics-android-integration-adjust/pull/7): Upgrade Adjust SDK version to 4.17.0.
+
+Version 0.3.2 (1st November, 2018)
 ===================================
-*(SupportsAdjust 4.15.1)*
+*(Supports Adjust 4.15.1)*
 
   * [Improvement](https://github.com/segment-integrations/analytics-android-integration-adjust/pull/6) Adds SDK signature to mitigate SDK spoofing, GDPR [Right to be Forgotten Function](https://github.com/adjust/android_sdk#gdpr-right-to-be-forgotten), [Push Token collection]( https://github.com/adjust/android_sdk#push-token) for use in our Audience Builder and Uninstall/Reinstall features, fraud prevention, [Google Referrer API](https://github.com/adjust/android_sdk#google-play-referrer-api), and advanced tag injection filtering.
 
