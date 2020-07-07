@@ -24,9 +24,8 @@ import static com.adjust.sdk.AdjustConfig.ENVIRONMENT_SANDBOX;
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
 
 /**
- * Adjust is a business intelligence platform for mobile app marketers,
- * combining attribution for advertising sources with analytics and store
- * statistics.
+ * Adjust is a business intelligence platform for mobile app marketers, combining attribution for
+ * advertising sources with analytics and store statistics.
  *
  * @see <a href="https://www.adjust.com">Adjust</a>
  * @see <a href="https://segment.com/docs/integrations/adjust/">Adjust Integration</a>
@@ -34,15 +33,18 @@ import static com.segment.analytics.internal.Utils.isNullOrEmpty;
  */
 public class AdjustIntegration extends Integration<AdjustInstance> {
   static final String ADJUST_KEY = "Adjust";
-  public static final Factory FACTORY = new Factory() {
-    @Override public Integration<?> create(ValueMap settings, Analytics analytics) {
-      return new AdjustIntegration(settings, analytics);
-    }
+  public static final Factory FACTORY =
+      new Factory() {
+        @Override
+        public Integration<?> create(ValueMap settings, Analytics analytics) {
+          return new AdjustIntegration(settings, analytics);
+        }
 
-    @Override public String key() {
-      return ADJUST_KEY;
-    }
-  };
+        @Override
+        public String key() {
+          return ADJUST_KEY;
+        }
+      };
 
   private final Logger logger;
   private final AdjustInstance adjust;
@@ -99,22 +101,26 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     }
   }
 
-  @Override public AdjustInstance getUnderlyingInstance() {
+  @Override
+  public AdjustInstance getUnderlyingInstance() {
     return adjust;
   }
 
-  @Override public void identify(IdentifyPayload identify) {
+  @Override
+  public void identify(IdentifyPayload identify) {
     super.identify(identify);
     setPartnerParams(identify);
   }
 
-  @Override public void reset() {
+  @Override
+  public void reset() {
     super.reset();
     adjust.resetSessionPartnerParameters();
     logger.verbose("Adjust.getDefaultInstance().resetSessionPartnerParameters();");
   }
 
-  @Override public void track(TrackPayload track) {
+  @Override
+  public void track(TrackPayload track) {
     super.track(track);
     setPartnerParams(track);
 
@@ -137,13 +143,15 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     adjust.trackEvent(event);
   }
 
-  @Override public void onActivityResumed(Activity activity) {
+  @Override
+  public void onActivityResumed(Activity activity) {
     super.onActivityResumed(activity);
 
     adjust.onResume();
   }
 
-  @Override public void onActivityPaused(Activity activity) {
+  @Override
+  public void onActivityPaused(Activity activity) {
     super.onActivityPaused(activity);
 
     adjust.onPause();
@@ -156,19 +164,23 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
       this.analytics = analytics;
     }
 
-    @Override public void onAttributionChanged(AdjustAttribution attribution) {
-      Map<String, Object> campaign = new ValueMap() //
-          .putValue("source", attribution.network)
-          .putValue("name", attribution.campaign)
-          .putValue("content", attribution.clickLabel)
-          .putValue("adCreative", attribution.creative)
-          .putValue("adGroup", attribution.adgroup);
+    @Override
+    public void onAttributionChanged(AdjustAttribution attribution) {
+      Map<String, Object> campaign =
+          new ValueMap() //
+              .putValue("source", attribution.network)
+              .putValue("name", attribution.campaign)
+              .putValue("content", attribution.clickLabel)
+              .putValue("adCreative", attribution.creative)
+              .putValue("adGroup", attribution.adgroup);
 
-      analytics.track("Install Attributed", new Properties() //
-          .putValue("provider", "Adjust") //
-          .putValue("trackerToken", attribution.trackerToken)
-          .putValue("trackerName", attribution.trackerName)
-          .putValue("campaign", campaign));
+      analytics.track(
+          "Install Attributed",
+          new Properties() //
+              .putValue("provider", "Adjust") //
+              .putValue("trackerToken", attribution.trackerToken)
+              .putValue("trackerName", attribution.trackerName)
+              .putValue("campaign", campaign));
     }
   }
 }
