@@ -1,6 +1,6 @@
 # CHANGELOG
 
-Version 0.3.3 (7th July, 2020)
+Version 0.3.4 (7th July, 2020)
 ================================
 *(Supports Adjust 4.22.0)*
 
