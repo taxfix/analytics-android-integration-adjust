@@ -69,6 +69,11 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
       OnAttributionChangedListener listener = new SegmentAttributionChangedListener(analytics);
       adjustConfig.setOnAttributionChangedListener(listener);
     }
+    boolean setDelay = settings.getBoolean("setDelay", false)
+    if (setDelay) {
+      adjustConfig.setDelayStart(settings.getDouble("delayTime", 0))
+    }
+
     switch (logger.logLevel) {
       case INFO:
         adjustConfig.setLogLevel(LogLevel.INFO);
