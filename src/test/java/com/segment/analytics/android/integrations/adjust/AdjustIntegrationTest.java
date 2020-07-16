@@ -77,6 +77,7 @@ public class AdjustIntegrationTest {
         .putValue("appToken", "foo") //
         .putValue("setEventBufferingEnabled", true) //
         .putValue("setEnvironmentProduction", true) //
+        .putValue("setDelay", true) //
         .putValue("trackAttributionData", true);
 
     PowerMockito.whenNew(AdjustConfig.class)
@@ -86,6 +87,7 @@ public class AdjustIntegrationTest {
     AdjustIntegration.FACTORY.create(settings, analytics);
 
     verify(config).setEventBufferingEnabled(true);
+    verify(config).setDelayStart(1.0);
     verify(config).setLogLevel(LogLevel.VERBOSE);
     verify(config) //
         .setOnAttributionChangedListener(isA(SegmentAttributionChangedListener.class));
@@ -107,6 +109,7 @@ public class AdjustIntegrationTest {
     AdjustIntegration.FACTORY.create(settings, analytics);
 
     verify(config, never()).setEventBufferingEnabled(anyBoolean());
+    verify(config, never()).setDelayStart(anyDouble());
     verify(config, never()).setLogLevel(any(LogLevel.class));
     verify(config, never()) //
         .setOnAttributionChangedListener(any(OnAttributionChangedListener.class));
