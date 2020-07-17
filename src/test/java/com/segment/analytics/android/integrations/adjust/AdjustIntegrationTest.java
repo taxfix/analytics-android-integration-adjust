@@ -78,6 +78,7 @@ public class AdjustIntegrationTest {
         .putValue("setEventBufferingEnabled", true) //
         .putValue("setEnvironmentProduction", true) //
         .putValue("setDelay", true) //
+        .putValue("delayTime", 1.0) //
         .putValue("trackAttributionData", true);
 
     PowerMockito.whenNew(AdjustConfig.class)
