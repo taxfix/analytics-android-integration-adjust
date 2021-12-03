@@ -2,6 +2,7 @@ package com.segment.analytics.android.integrations.adjust;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAttribution;
 import com.adjust.sdk.AdjustConfig;
@@ -58,6 +59,7 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     Context context = analytics.getApplication();
     int overwrittenIdentifier = context != null && context.getResources() != null ? context.getResources().getIdentifier("ADJUST_TOKEN_ANDROID","string",context.getPackageName()) : 0;
     String appToken = overwrittenIdentifier > 0 ? context.getResources().getString(overwrittenIdentifier) : settings.getString("appToken");
+    Log.d("Adjust-Segment", appToken);
     boolean setEnvironmentProduction = settings.getBoolean("setEnvironmentProduction", false);
     String environment = setEnvironmentProduction ? ENVIRONMENT_PRODUCTION : ENVIRONMENT_SANDBOX;
     AdjustConfig adjustConfig = new AdjustConfig(context, appToken, environment);
