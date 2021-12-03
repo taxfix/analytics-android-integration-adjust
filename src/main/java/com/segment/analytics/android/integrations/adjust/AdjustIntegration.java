@@ -56,7 +56,8 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     this.customEvents = settings.getValueMap("customEvents");
 
     Context context = analytics.getApplication();
-    String appToken = settings.getString("appToken");
+    int overwrittenIdentifier = context != null && context.getResources() != null ? context.getResources().getIdentifier("ADJUST_TOKEN_ANDROID","string",context.getPackageName()) : 0;
+    String appToken = overwrittenIdentifier > 0 ? context.getResources().getString(overwrittenIdentifier) : settings.getString("appToken");
     boolean setEnvironmentProduction = settings.getBoolean("setEnvironmentProduction", false);
     String environment = setEnvironmentProduction ? ENVIRONMENT_PRODUCTION : ENVIRONMENT_SANDBOX;
     AdjustConfig adjustConfig = new AdjustConfig(context, appToken, environment);
