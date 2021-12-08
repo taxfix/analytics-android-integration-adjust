@@ -18,6 +18,7 @@ import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
+import com.segment.analytics.AnalyticsContext;
 import java.util.Map;
 
 import static com.adjust.sdk.AdjustConfig.ENVIRONMENT_PRODUCTION;
@@ -127,9 +128,13 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     super.track(track);
     setPartnerParams(track);
 
-    String token = customEvents.getString(track.event());
+    AnalyticsContext context = track.context();
+    String token = context.getString("AdjustEventKey");
     if (isNullOrEmpty(token)) {
-      return;
+      token = customEvents.getString(track.event());
+      if (isNullOrEmpty(token)) {
+        return;
+      }
     }
 
     Properties properties = track.properties();
