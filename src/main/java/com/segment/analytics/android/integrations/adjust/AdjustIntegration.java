@@ -137,12 +137,12 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     // FPT-227 retrieve event key for specific Adjust Project
     String eventName = track.event();
     String token = customEvents.getString(track.event());
-    if (isNullOrEmpty(token)) {
+    if (!isNullOrEmpty(this.appToken)) {
       String overwrittenEventName = this.appToken + "#" + eventName;
       token = customEvents.getString(overwrittenEventName);
-      if (isNullOrEmpty(token)) {
-        return;
-      }
+    }
+    if (isNullOrEmpty(token)) {
+      return;
     }
 
     Properties properties = track.properties();
