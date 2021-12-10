@@ -61,10 +61,11 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     Context context = analytics.getApplication();
 
     // FPT-227 overwrite Adjust app token from build settings
-    int overwrittenIdentifier = context != null && context.getResources() != null ? context.getResources().getIdentifier("ADJUST_TOKEN_ANDROID","string",context.getPackageName()) : 0;
-    String appToken = overwrittenIdentifier > 0 ? context.getResources().getString(overwrittenIdentifier) : settings.getString("appToken");
+    int overwrittenIdentifier = context != null && context.getResources() != null ? context.getResources().getIdentifier("AdjustAppToken","string",context.getPackageName()) : 0;
+    String overwrittenAppToken = overwrittenIdentifier > 0 ? context.getResources().getString(overwrittenIdentifier) : "";
+    String appToken = overwrittenAppToken.length() > 0 ? overwrittenAppToken : settings.getString("appToken");
     this.appToken = appToken;
-    Log.d("Adjust-Segment", appToken);
+    Log.d("AdjustAppToken", appToken);
 
     boolean setEnvironmentProduction = settings.getBoolean("setEnvironmentProduction", false);
     String environment = setEnvironmentProduction ? ENVIRONMENT_PRODUCTION : ENVIRONMENT_SANDBOX;
