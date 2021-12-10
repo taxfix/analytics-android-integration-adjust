@@ -51,6 +51,7 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
   private final Logger logger;
   private final AdjustInstance adjust;
   private final ValueMap customEvents;
+  private final String appToken;
 
   AdjustIntegration(ValueMap settings, final Analytics analytics) {
     this.adjust = Adjust.getDefaultInstance();
@@ -58,9 +59,13 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     this.customEvents = settings.getValueMap("customEvents");
 
     Context context = analytics.getApplication();
+
+    // FPT-227 overwrite Adjust app token from build settings
     int overwrittenIdentifier = context != null && context.getResources() != null ? context.getResources().getIdentifier("ADJUST_TOKEN_ANDROID","string",context.getPackageName()) : 0;
     String appToken = overwrittenIdentifier > 0 ? context.getResources().getString(overwrittenIdentifier) : settings.getString("appToken");
+    this.appToken = appToken;
     Log.d("Adjust-Segment", appToken);
+
     boolean setEnvironmentProduction = settings.getBoolean("setEnvironmentProduction", false);
     String environment = setEnvironmentProduction ? ENVIRONMENT_PRODUCTION : ENVIRONMENT_SANDBOX;
     AdjustConfig adjustConfig = new AdjustConfig(context, appToken, environment);
@@ -128,10 +133,12 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     super.track(track);
     setPartnerParams(track);
 
-    AnalyticsContext context = track.context();
-    String token = context.getString("AdjustEventKey");
+    // FPT-227 retrieve event key for specific Adjust Project
+    String eventName = track.event();
+    String token = customEvents.getString(track.event());
     if (isNullOrEmpty(token)) {
-      token = customEvents.getString(track.event());
+      String overwrittenEventName = this.appToken + "#" + eventName;
+      token = customEvents.getString(overwrittenEventName);
       if (isNullOrEmpty(token)) {
         return;
       }
