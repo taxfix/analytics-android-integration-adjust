@@ -52,6 +52,7 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
   private final AdjustInstance adjust;
   private final ValueMap customEvents;
   private final String appToken;
+  private final boolean isAppTokenOverriden;
 
   AdjustIntegration(ValueMap settings, final Analytics analytics) {
     this.adjust = Adjust.getDefaultInstance();
@@ -64,6 +65,7 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     int overwrittenIdentifier = context != null && context.getResources() != null ? context.getResources().getIdentifier("AdjustAppToken","string",context.getPackageName()) : 0;
     String overwrittenAppToken = overwrittenIdentifier > 0 ? context.getResources().getString(overwrittenIdentifier) : "";
     String appToken = overwrittenAppToken.length() > 0 ? overwrittenAppToken : settings.getString("appToken");
+    this.appTokenOverriden = overwrittenAppToken.length() > 0 && !overwrittenAppToken.equals(settings.getString("appToken"));
     this.appToken = appToken;
     Log.d("AdjustAppToken", appToken);
 
@@ -137,12 +139,13 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     // FPT-227 retrieve event key for specific Adjust Project
     String eventName = track.event();
     String token = customEvents.getString(track.event());
-    if (isNullOrEmpty(token)) {
+    if (this.isAppTokenOverriden) {
       String overwrittenEventName = this.appToken + "#" + eventName;
       token = customEvents.getString(overwrittenEventName);
-      if (isNullOrEmpty(token)) {
-        return;
-      }
+    }
+
+    if (isNullOrEmpty(token)) {
+      return;
     }
     
 
