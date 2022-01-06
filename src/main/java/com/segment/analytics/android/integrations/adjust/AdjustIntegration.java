@@ -67,7 +67,7 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     String appToken = overwrittenAppToken.length() > 0 ? overwrittenAppToken : settings.getString("appToken");
     this.isAppTokenOverriden = overwrittenAppToken.length() > 0 && !overwrittenAppToken.equals(settings.getString("appToken"));
     this.appToken = appToken;
-    Log.d("Adjust overwrittenIdentifier", overwrittenIdentifier);
+    Log.d("Adjust overwrittenIdentifier", String.valueOf(overwrittenAppTokenIdentifier));
     Log.d("Adjust overwrittenAppToken", overwrittenAppToken);
     Log.d("Adjust resolved app token", appToken);
 
