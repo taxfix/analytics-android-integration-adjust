@@ -2,6 +2,7 @@ package com.segment.analytics.android.integrations.adjust;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAttribution;
 import com.adjust.sdk.AdjustConfig;
@@ -17,6 +18,7 @@ import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
+import com.segment.analytics.AnalyticsContext;
 import java.util.Map;
 
 import static com.adjust.sdk.AdjustConfig.ENVIRONMENT_PRODUCTION;
@@ -49,6 +51,8 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
   private final Logger logger;
   private final AdjustInstance adjust;
   private final ValueMap customEvents;
+  private final String appToken;
+  private final boolean isAppTokenOverriden;
 
   AdjustIntegration(ValueMap settings, final Analytics analytics) {
     this.adjust = Adjust.getDefaultInstance();
@@ -56,7 +60,16 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     this.customEvents = settings.getValueMap("customEvents");
 
     Context context = analytics.getApplication();
-    String appToken = settings.getString("appToken");
+
+    // FPT-227 overwrite Adjust app token from build settings
+    int overwrittenAppTokenIdentifier = context != null && context.getResources() != null ? context.getResources().getIdentifier("AdjustAppKey","string",context.getPackageName()) : 0;
+    String overwrittenAppToken = overwrittenAppTokenIdentifier > 0 ? context.getResources().getString(overwrittenAppTokenIdentifier) : "";
+    String appToken = overwrittenAppToken.length() > 0 ? overwrittenAppToken : settings.getString("appToken");
+    this.isAppTokenOverriden = overwrittenAppToken.length() > 0 && !overwrittenAppToken.equals(settings.getString("appToken"));
+    this.appToken = appToken;
+    Log.d("Adjust resolved app token", appToken);
+    Log.d("Adjust isAppTokenOverriden", String.valueOf(this.isAppTokenOverriden));
+
     boolean setEnvironmentProduction = settings.getBoolean("setEnvironmentProduction", false);
     String environment = setEnvironmentProduction ? ENVIRONMENT_PRODUCTION : ENVIRONMENT_SANDBOX;
     AdjustConfig adjustConfig = new AdjustConfig(context, appToken, environment);
@@ -124,7 +137,16 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     super.track(track);
     setPartnerParams(track);
 
+    // FPT-227 retrieve event key for specific Adjust Project
+    String eventName = track.event();
     String token = customEvents.getString(track.event());
+    if (this.isAppTokenOverriden) {
+      String overwrittenEventName = this.appToken + "#" + eventName;
+      token = customEvents.getString(overwrittenEventName);
+      Log.d("Adjust lookup for custom event", overwrittenEventName);
+      Log.d("Adjust token for custom event", token);
+    }
+
     if (isNullOrEmpty(token)) {
       return;
     }

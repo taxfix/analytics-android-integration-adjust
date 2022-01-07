@@ -29,6 +29,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.rule.PowerMockRule;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLog;
 
 import static com.segment.analytics.Analytics.LogLevel.NONE;
 import static com.segment.analytics.Analytics.LogLevel.VERBOSE;
@@ -56,6 +57,8 @@ public class AdjustIntegrationTest {
 
   @Before public void setUp() {
     initMocks(this);
+
+    ShadowLog.stream = System.out;
 
     when(analytics.logger("Adjust")).thenReturn(Logger.with(VERBOSE));
     ValueMap settings = new ValueMap() //
