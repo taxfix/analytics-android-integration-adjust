@@ -143,8 +143,6 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     if (this.isAppTokenOverriden) {
       String overwrittenEventName = this.appToken + "#" + eventName;
       token = customEvents.getString(overwrittenEventName);
-      Log.d("Adjust lookup for custom event", overwrittenEventName);
-      Log.d("Adjust token for custom event", token);
     }
 
     if (isNullOrEmpty(token)) {
