@@ -67,9 +67,7 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     String appToken = overwrittenAppToken.length() > 0 ? overwrittenAppToken : settings.getString("appToken");
     this.isAppTokenOverriden = overwrittenAppToken.length() > 0 && !overwrittenAppToken.equals(settings.getString("appToken"));
     this.appToken = appToken;
-    Log.d("Adjust resolved app token", appToken);
-    Log.d("Adjust isAppTokenOverriden", String.valueOf(this.isAppTokenOverriden));
-
+    
     boolean setEnvironmentProduction = settings.getBoolean("setEnvironmentProduction", false);
     String environment = setEnvironmentProduction ? ENVIRONMENT_PRODUCTION : ENVIRONMENT_SANDBOX;
     AdjustConfig adjustConfig = new AdjustConfig(context, appToken, environment);
