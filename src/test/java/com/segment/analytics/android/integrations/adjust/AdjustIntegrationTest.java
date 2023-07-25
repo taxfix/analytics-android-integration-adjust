@@ -2,6 +2,8 @@ package com.segment.analytics.android.integrations.adjust;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.res.Resources;
+
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAttribution;
 import com.adjust.sdk.AdjustConfig;
@@ -54,6 +56,8 @@ public class AdjustIntegrationTest {
   @Mock Analytics analytics;
   @Mock AdjustConfig config;
   @Mock AdjustInstance adjustInstance;
+  @Mock Application mockApplication;
+  @Mock Resources mockResources;
   AdjustIntegration integration;
 
   @Before public void setUp() {
@@ -62,6 +66,11 @@ public class AdjustIntegrationTest {
     ShadowLog.stream = System.out;
 
     when(analytics.logger("Adjust")).thenReturn(Logger.with(VERBOSE));
+    /*when(analytics.getApplication()).thenReturn(mockApplication);
+    when(mockApplication.getResources()).thenReturn(mockResources);
+    when(mockApplication.getPackageName()).thenReturn("testPackage");
+    when(mockResources.getIdentifier("AdjustAppKey", "string", "testPackage")).thenReturn(123456);
+    when(mockResources.getString(123456)).thenReturn("123456");*/
     ValueMap settings = new ValueMap() //
         .putValue("customEvents", new ValueMap().putValue("foo", "bar"));
 
@@ -248,7 +257,7 @@ public class AdjustIntegrationTest {
 
   @Test public void trackWithPartnerParameter() throws Exception {
     AdjustEvent event = mock(AdjustEvent.class);
-    PowerMockito.whenNew(AdjustEvent.class).withArguments("submissionSuccess").thenReturn(event);
+    PowerMockito.whenNew(AdjustEvent.class).withArguments("bar").thenReturn(event);
 
     ValueMap partnerParametersConfig = new ValueMap();
     partnerParametersConfig.put("event_id", "12345");
@@ -260,7 +269,7 @@ public class AdjustIntegrationTest {
     integrationOptions.setIntegrationOptions("Adjust", adjustConfig);
 
     integration.track(new TrackPayloadBuilder()
-            .event("submissionSuccess")
+            .event("foo")
             .options(integrationOptions)
             .build());
 
