@@ -2,7 +2,6 @@ package com.segment.analytics.android.integrations.adjust;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAttribution;
 import com.adjust.sdk.AdjustConfig;
@@ -18,7 +17,6 @@ import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
-import com.segment.analytics.AnalyticsContext;
 import java.util.Map;
 
 import static com.adjust.sdk.AdjustConfig.ENVIRONMENT_PRODUCTION;
@@ -112,6 +110,21 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     }
   }
 
+  private ValueMap getPartnerParameters(TrackPayload trackPayload) {
+    ValueMap partnerParametersValueMap = new ValueMap();
+    ValueMap integrations = trackPayload.integrations();
+    if (!isNullOrEmpty(integrations)) {
+      ValueMap adjustConfig = integrations.getValueMap("Adjust");
+      if (!isNullOrEmpty(adjustConfig)) {
+        ValueMap partnerParameters = adjustConfig.getValueMap("partnerParameters");
+        if (!isNullOrEmpty(partnerParameters)) {
+          partnerParametersValueMap = partnerParameters;
+        }
+      }
+    }
+    return partnerParametersValueMap;
+  }
+
   @Override
   public AdjustInstance getUnderlyingInstance() {
     return adjust;
@@ -151,6 +164,11 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     AdjustEvent event = new AdjustEvent(token);
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       event.addCallbackParameter(entry.getKey(), String.valueOf(entry.getValue()));
+    }
+    // Add partner parameters
+    ValueMap partnerParameters = this.getPartnerParameters(track);
+    for (Map.Entry<String, Object> entry : partnerParameters.entrySet()) {
+      event.addPartnerParameter(entry.getKey(), String.valueOf(entry.getValue()));
     }
     double revenue = properties.revenue();
     String currency = properties.currency();
