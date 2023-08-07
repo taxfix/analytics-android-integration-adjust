@@ -66,11 +66,6 @@ public class AdjustIntegrationTest {
     ShadowLog.stream = System.out;
 
     when(analytics.logger("Adjust")).thenReturn(Logger.with(VERBOSE));
-    /*when(analytics.getApplication()).thenReturn(mockApplication);
-    when(mockApplication.getResources()).thenReturn(mockResources);
-    when(mockApplication.getPackageName()).thenReturn("testPackage");
-    when(mockResources.getIdentifier("AdjustAppKey", "string", "testPackage")).thenReturn(123456);
-    when(mockResources.getString(123456)).thenReturn("123456");*/
     ValueMap settings = new ValueMap() //
         .putValue("customEvents", new ValueMap().putValue("foo", "bar"));
 
