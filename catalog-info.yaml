@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: analytics-android-integration-adjust
+  description: ""
+  annotations: []
+spec:
+  type: library
+  lifecycle: production
+  domain: frontend-apps
+  system: unknown
+  owner: frontend-platform
+relations: []
