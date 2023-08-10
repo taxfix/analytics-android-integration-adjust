@@ -12,11 +12,10 @@ import com.adjust.sdk.AdjustInstance;
 import com.adjust.sdk.LogLevel;
 import com.adjust.sdk.OnAttributionChangedListener;
 import com.segment.analytics.Analytics;
-import com.segment.analytics.Options;
+import com.segment.analytics.AnalyticsContext;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
 import com.segment.analytics.ValueMap;
-import com.segment.analytics.android.integrations.adjust.AdjustIntegration.SegmentAttributionChangedListener;
 import com.segment.analytics.core.tests.BuildConfig;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.test.TrackPayloadBuilder;
@@ -36,6 +35,7 @@ import org.robolectric.shadows.ShadowLog;
 
 import static com.segment.analytics.Analytics.LogLevel.NONE;
 import static com.segment.analytics.Analytics.LogLevel.VERBOSE;
+import static com.segment.analytics.Utils.createContext;
 import static com.segment.analytics.Utils.createTraits;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -265,12 +265,15 @@ public class AdjustIntegrationTest {
     ValueMap adjustConfig = new ValueMap();
     adjustConfig.put("partnerParameters", partnerParametersConfig);
 
-    Options integrationOptions = new Options();
-    integrationOptions.setIntegrationOptions("Adjust", adjustConfig);
+    ValueMap integrationsConfig = new ValueMap();
+    integrationsConfig.put("Adjust", adjustConfig);
+
+    AnalyticsContext context = createContext(createTraits());
+    context.put("integrations", integrationsConfig);
 
     integration.track(new TrackPayloadBuilder()
             .event("foo")
-            .options(integrationOptions)
+            .context(context)
             .build());
 
     verify(event).addPartnerParameter("event_id", "12345");

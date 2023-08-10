@@ -10,6 +10,7 @@ import com.adjust.sdk.AdjustInstance;
 import com.adjust.sdk.LogLevel;
 import com.adjust.sdk.OnAttributionChangedListener;
 import com.segment.analytics.Analytics;
+import com.segment.analytics.AnalyticsContext;
 import com.segment.analytics.Properties;
 import com.segment.analytics.ValueMap;
 import com.segment.analytics.integrations.BasePayload;
@@ -123,13 +124,16 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
 
   private ValueMap getPartnerParameters(TrackPayload trackPayload) {
     ValueMap partnerParametersValueMap = new ValueMap();
-    ValueMap integrations = trackPayload.integrations();
-    if (!isNullOrEmpty(integrations)) {
-      ValueMap adjustConfig = integrations.getValueMap("Adjust");
-      if (!isNullOrEmpty(adjustConfig)) {
-        ValueMap partnerParameters = adjustConfig.getValueMap("partnerParameters");
-        if (!isNullOrEmpty(partnerParameters)) {
-          partnerParametersValueMap = partnerParameters;
+    AnalyticsContext context = trackPayload.context();
+    if (!isNullOrEmpty(context)) {
+      ValueMap integrations = context.getValueMap("integrations");
+      if (!isNullOrEmpty(integrations)) {
+        ValueMap adjustConfig = integrations.getValueMap("Adjust");
+        if (!isNullOrEmpty(adjustConfig)) {
+          ValueMap partnerParameters = adjustConfig.getValueMap("partnerParameters");
+          if (!isNullOrEmpty(partnerParameters)) {
+            partnerParametersValueMap = partnerParameters;
+          }
         }
       }
     }
