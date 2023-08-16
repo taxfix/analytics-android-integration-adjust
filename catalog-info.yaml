@@ -3,11 +3,9 @@ kind: Component
 metadata:
   name: analytics-android-integration-adjust
   description: ""
-  annotations: []
 spec:
   type: library
   lifecycle: production
   domain: frontend-apps
-  system: unknown
+  system: native-modules
   owner: frontend-platform
-relations: []
