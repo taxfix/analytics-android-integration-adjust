@@ -2,7 +2,6 @@ package com.segment.analytics.android.integrations.adjust;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAttribution;
 import com.adjust.sdk.AdjustConfig;
@@ -11,6 +10,7 @@ import com.adjust.sdk.AdjustInstance;
 import com.adjust.sdk.LogLevel;
 import com.adjust.sdk.OnAttributionChangedListener;
 import com.segment.analytics.Analytics;
+import com.segment.analytics.AnalyticsContext;
 import com.segment.analytics.Properties;
 import com.segment.analytics.ValueMap;
 import com.segment.analytics.integrations.BasePayload;
@@ -18,7 +18,6 @@ import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
-import com.segment.analytics.AnalyticsContext;
 import java.util.Map;
 
 import static com.adjust.sdk.AdjustConfig.ENVIRONMENT_PRODUCTION;
@@ -62,12 +61,23 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     Context context = analytics.getApplication();
 
     // FPT-227 overwrite Adjust app token from build settings
-    int overwrittenAppTokenIdentifier = context != null && context.getResources() != null ? context.getResources().getIdentifier("AdjustAppKey","string",context.getPackageName()) : 0;
-    String overwrittenAppToken = overwrittenAppTokenIdentifier > 0 ? context.getResources().getString(overwrittenAppTokenIdentifier) : "";
-    String appToken = overwrittenAppToken.length() > 0 ? overwrittenAppToken : settings.getString("appToken");
-    this.isAppTokenOverriden = overwrittenAppToken.length() > 0 && !overwrittenAppToken.equals(settings.getString("appToken"));
+    int overwrittenAppTokenIdentifier =
+        context != null && context.getResources() != null
+            ? context
+                .getResources()
+                .getIdentifier("AdjustAppKey", "string", context.getPackageName())
+            : 0;
+    String overwrittenAppToken =
+        overwrittenAppTokenIdentifier > 0
+            ? context.getResources().getString(overwrittenAppTokenIdentifier)
+            : "";
+    String appToken =
+        overwrittenAppToken.length() > 0 ? overwrittenAppToken : settings.getString("appToken");
+    this.isAppTokenOverriden =
+        overwrittenAppToken.length() > 0
+            && !overwrittenAppToken.equals(settings.getString("appToken"));
     this.appToken = appToken;
-    
+
     boolean setEnvironmentProduction = settings.getBoolean("setEnvironmentProduction", false);
     String environment = setEnvironmentProduction ? ENVIRONMENT_PRODUCTION : ENVIRONMENT_SANDBOX;
     AdjustConfig adjustConfig = new AdjustConfig(context, appToken, environment);
@@ -112,6 +122,24 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     }
   }
 
+  private ValueMap getPartnerParameters(TrackPayload trackPayload) {
+    ValueMap partnerParametersValueMap = new ValueMap();
+    AnalyticsContext context = trackPayload.context();
+    if (!isNullOrEmpty(context)) {
+      ValueMap integrations = context.getValueMap("integrations");
+      if (!isNullOrEmpty(integrations)) {
+        ValueMap adjustConfig = integrations.getValueMap("Adjust");
+        if (!isNullOrEmpty(adjustConfig)) {
+          ValueMap partnerParameters = adjustConfig.getValueMap("partnerParameters");
+          if (!isNullOrEmpty(partnerParameters)) {
+            partnerParametersValueMap = partnerParameters;
+          }
+        }
+      }
+    }
+    return partnerParametersValueMap;
+  }
+
   @Override
   public AdjustInstance getUnderlyingInstance() {
     return adjust;
@@ -151,6 +179,11 @@ public class AdjustIntegration extends Integration<AdjustInstance> {
     AdjustEvent event = new AdjustEvent(token);
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       event.addCallbackParameter(entry.getKey(), String.valueOf(entry.getValue()));
+    }
+    // Add partner parameters
+    ValueMap partnerParameters = this.getPartnerParameters(track);
+    for (Map.Entry<String, Object> entry : partnerParameters.entrySet()) {
+      event.addPartnerParameter(entry.getKey(), String.valueOf(entry.getValue()));
     }
     double revenue = properties.revenue();
     String currency = properties.currency();

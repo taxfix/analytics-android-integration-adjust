@@ -2,6 +2,8 @@ package com.segment.analytics.android.integrations.adjust;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.res.Resources;
+
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAttribution;
 import com.adjust.sdk.AdjustConfig;
@@ -10,10 +12,10 @@ import com.adjust.sdk.AdjustInstance;
 import com.adjust.sdk.LogLevel;
 import com.adjust.sdk.OnAttributionChangedListener;
 import com.segment.analytics.Analytics;
+import com.segment.analytics.AnalyticsContext;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
 import com.segment.analytics.ValueMap;
-import com.segment.analytics.android.integrations.adjust.AdjustIntegration.SegmentAttributionChangedListener;
 import com.segment.analytics.core.tests.BuildConfig;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.test.TrackPayloadBuilder;
@@ -33,6 +35,7 @@ import org.robolectric.shadows.ShadowLog;
 
 import static com.segment.analytics.Analytics.LogLevel.NONE;
 import static com.segment.analytics.Analytics.LogLevel.VERBOSE;
+import static com.segment.analytics.Utils.createContext;
 import static com.segment.analytics.Utils.createTraits;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -53,6 +56,8 @@ public class AdjustIntegrationTest {
   @Mock Analytics analytics;
   @Mock AdjustConfig config;
   @Mock AdjustInstance adjustInstance;
+  @Mock Application mockApplication;
+  @Mock Resources mockResources;
   AdjustIntegration integration;
 
   @Before public void setUp() {
@@ -242,6 +247,31 @@ public class AdjustIntegrationTest {
 
     verify(event).addCallbackParameter("type", "1");
     verify(event).addCallbackParameter("category", "shirt");
+    verify(adjustInstance).trackEvent(event);
+  }
+
+  @Test public void trackWithPartnerParameter() throws Exception {
+    AdjustEvent event = mock(AdjustEvent.class);
+    PowerMockito.whenNew(AdjustEvent.class).withArguments("bar").thenReturn(event);
+
+    ValueMap partnerParametersConfig = new ValueMap();
+    partnerParametersConfig.put("event_id", "12345");
+
+    ValueMap adjustConfig = new ValueMap();
+    adjustConfig.put("partnerParameters", partnerParametersConfig);
+
+    ValueMap integrationsConfig = new ValueMap();
+    integrationsConfig.put("Adjust", adjustConfig);
+
+    AnalyticsContext context = createContext(createTraits());
+    context.put("integrations", integrationsConfig);
+
+    integration.track(new TrackPayloadBuilder()
+            .event("foo")
+            .context(context)
+            .build());
+
+    verify(event).addPartnerParameter("event_id", "12345");
     verify(adjustInstance).trackEvent(event);
   }
 
