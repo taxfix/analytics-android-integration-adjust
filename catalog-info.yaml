@@ -7,5 +7,5 @@ spec:
   type: library
   lifecycle: production
   domain: frontend-apps
-  system: native-modules
-  owner: frontend-platform
+  system: frontend-tracking
+  owner: maestros
