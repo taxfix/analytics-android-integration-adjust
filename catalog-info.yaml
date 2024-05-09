@@ -5,7 +5,7 @@ metadata:
   description: ""
 spec:
   type: library
-  lifecycle: production
+  lifecycle: deprecated
   domain: frontend-apps
   system: frontend-tracking
   owner: maestros
