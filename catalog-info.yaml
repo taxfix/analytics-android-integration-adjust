@@ -6,6 +6,6 @@ metadata:
 spec:
   type: library
   lifecycle: deprecated
-  domain: frontend-apps
-  system: frontend-tracking
+  domain: tech-foundation
+  system: tracking
   owner: maestros
